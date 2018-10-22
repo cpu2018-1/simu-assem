@@ -1521,8 +1521,8 @@ YY_RULE_SETUP
                         bcode += ((unsigned)(diff<<16)>>27)<<21;
 
                     }else if( mode == DSIMM ){
-                        int diff = sb->address - curr_pos;
-                        bcode += atoi(yytext) & 0xffff;
+                        
+                        bcode += sb->address & 0xffff;
 
                     }
                 }else{
@@ -2712,9 +2712,8 @@ void search_undef(char sb[]){
 
             }else if((*ad)->mode == DSIMM){
 
-              int diff = curr_pos - ((*ad)->address);
-              printf("dsimm: %d\n", diff);
-              codebuffer[(*ad)->address] += diff & 0xffff;
+              printf("dsimm: %d\n", curr_pos);
+              codebuffer[(*ad)->address] += curr_pos & 0xffff;
 
             }
 
