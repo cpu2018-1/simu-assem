@@ -559,7 +559,7 @@ char *yytext;
 #include <string.h>
 
 // BUFSIZE古文のコードしか読めないので改良が必要!!!!
-#define BUFSIZE 4096
+#define BUFSIZE 131072
 
 enum Mode{
   INIT,
@@ -886,15 +886,18 @@ case YY_STATE_EOF(COMMENT):
               add_to_buffer(bcode);
               print_bcode(bcode);
             }
+            
+            //末尾0
+            codebuffer[curr_pos] = 0b0;
 
             putchar('\n');
-            for(int i = 0; i<curr_pos; i++){
+            for(int i = 0; i <= curr_pos; i++){
                 print_bcode(codebuffer[i]);
 
             }
 
             FILE *f = fopen("bytecode.b", "wb");
-            fwrite(codebuffer, sizeof(int), curr_pos, f);
+            fwrite(codebuffer, sizeof(int), curr_pos+1, f);
             fclose(f);
 
             return 0;
@@ -902,22 +905,22 @@ case YY_STATE_EOF(COMMENT):
 	YY_BREAK
 case 1:
 YY_RULE_SETUP
-#line 81 "lex.l"
+#line 84 "lex.l"
 printf(".TEXT\n");
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 82 "lex.l"
+#line 85 "lex.l"
 printf(".DATA\n");
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 83 "lex.l"
+#line 86 "lex.l"
 {
               printf(".GLOBAL\n");
               
-              //jalに設定
-              bcode += 0b000110<<26;
+              //jに設定
+              bcode += 0b100010<<26;
               return_flag++;
               mode = GLOBAL;
 
@@ -925,7 +928,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 92 "lex.l"
+#line 95 "lex.l"
 {
               printf(".ALIGN\n");
               mode = ALIGN;
@@ -933,22 +936,22 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 96 "lex.l"
+#line 99 "lex.l"
 ;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 97 "lex.l"
+#line 100 "lex.l"
 ;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 98 "lex.l"
+#line 101 "lex.l"
 ;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 101 "lex.l"
+#line 104 "lex.l"
 {
             printf("LUI\n");
             bcode += 0b110000<<26;
@@ -959,7 +962,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 108 "lex.l"
+#line 111 "lex.l"
 {
             printf("ADD\n");
             bcode += 0b001100<<26;
@@ -970,7 +973,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 115 "lex.l"
+#line 118 "lex.l"
 {
             printf("ADDI\n");
             bcode += 0b001000<<26;
@@ -981,7 +984,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 122 "lex.l"
+#line 125 "lex.l"
 {
             printf("SUB\n");
             bcode += 0b010100<<26;
@@ -992,7 +995,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 129 "lex.l"
+#line 132 "lex.l"
 {
             printf("SLL\n");
             bcode += 0b011100<<26;
@@ -1003,7 +1006,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 136 "lex.l"
+#line 139 "lex.l"
 {
             printf("SLLI\n");
             bcode += 0b011000<<26;
@@ -1014,7 +1017,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 143 "lex.l"
+#line 146 "lex.l"
 {
             printf("SRL\n");
             bcode += 0b100100<<26;
@@ -1025,7 +1028,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 150 "lex.l"
+#line 153 "lex.l"
 {
             printf("SRLI\n");
             bcode += 0b100000<<26;
@@ -1036,7 +1039,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 157 "lex.l"
+#line 160 "lex.l"
 {
             printf("SRA\n");
             bcode += 0b101100<<26;
@@ -1047,7 +1050,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 164 "lex.l"
+#line 167 "lex.l"
 {
             printf("SRAI\n");
             bcode += 0b101000<<26;
@@ -1058,7 +1061,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 171 "lex.l"
+#line 174 "lex.l"
 {
             printf("JAL\n");
             bcode += 0b000110<<26;
@@ -1068,7 +1071,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 177 "lex.l"
+#line 180 "lex.l"
 {
             printf("J\n");
             bcode += 0b100010<<26;
@@ -1078,7 +1081,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 183 "lex.l"
+#line 186 "lex.l"
 {
             printf("JALR\n");
             bcode += 0b001110<<26;
@@ -1088,7 +1091,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 189 "lex.l"
+#line 192 "lex.l"
 {
             printf("JR\n");
             bcode += 0b101010<<26;
@@ -1098,7 +1101,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 195 "lex.l"
+#line 198 "lex.l"
 {
             printf("BEQ\n");
             bcode += 0b000010<<26;
@@ -1108,7 +1111,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 201 "lex.l"
+#line 204 "lex.l"
 {
             printf("BNE\n");
             bcode += 0b001010<<26;
@@ -1118,7 +1121,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 207 "lex.l"
+#line 210 "lex.l"
 {
             printf("BLT\n");
             bcode += 0b010010<<26;
@@ -1128,7 +1131,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 213 "lex.l"
+#line 216 "lex.l"
 {
             printf("BLE\n");
             bcode += 0b011010<<26;
@@ -1138,7 +1141,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 219 "lex.l"
+#line 222 "lex.l"
 {
             printf("LW\n");
             bcode += 0b001111<<26;
@@ -1148,7 +1151,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 225 "lex.l"
+#line 228 "lex.l"
 {
             printf("SW\n");
             bcode += 0b000111<<26;
@@ -1158,7 +1161,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 231 "lex.l"
+#line 234 "lex.l"
 {
             printf("OUT\n");
             bcode += 0b000011<<26;
@@ -1168,7 +1171,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 237 "lex.l"
+#line 240 "lex.l"
 {
             printf("IN\n");
             bcode += 0b001011<<26;
@@ -1178,7 +1181,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 243 "lex.l"
+#line 246 "lex.l"
 {
             printf("FADD\n");
             bcode = bcode + (0b000001<<26) + 0b100;
@@ -1188,7 +1191,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 249 "lex.l"
+#line 252 "lex.l"
 {
             printf("FSUB\n");
             bcode = bcode + (0b000001<<26) + 0b1000;
@@ -1198,7 +1201,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 255 "lex.l"
+#line 258 "lex.l"
 {
             printf("FMUL\n");
             bcode = bcode + (0b000001<<26) + 0b1100;
@@ -1208,7 +1211,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 261 "lex.l"
+#line 264 "lex.l"
 {
             printf("FDIV\n");
             bcode = bcode + (0b000001<<26) + 0b10000;
@@ -1218,7 +1221,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 267 "lex.l"
+#line 270 "lex.l"
 {
             printf("FEQ\n");
             bcode = bcode + (0b000001<<26) + 0b10101;
@@ -1228,7 +1231,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 273 "lex.l"
+#line 276 "lex.l"
 {
             printf("FLT\n");
             bcode = bcode + (0b000001<<26) + 0b11001;
@@ -1238,7 +1241,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 279 "lex.l"
+#line 282 "lex.l"
 {
             printf("FLE\n");
             bcode = bcode + (0b000001<<26) + 0b11101;
@@ -1248,7 +1251,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 285 "lex.l"
+#line 288 "lex.l"
 {
             printf("FSQRT\n");
             bcode = bcode + (0b000001<<26) + 0b100000;
@@ -1258,7 +1261,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 291 "lex.l"
+#line 294 "lex.l"
 {
             printf("FNEG\n");
             bcode = bcode + (0b000001<<26) + 0b100100;
@@ -1268,7 +1271,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 297 "lex.l"
+#line 300 "lex.l"
 {
             printf("ITOF\n");
             bcode = bcode + (0b000001<<26) + 0b101010;
@@ -1278,7 +1281,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 303 "lex.l"
+#line 306 "lex.l"
 {
             printf("FTOI\n");
             bcode = bcode + (0b000001<<26) + 0b101101;
@@ -1288,7 +1291,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 309 "lex.l"
+#line 312 "lex.l"
 {
             printf("FMVFR\n");
             bcode = bcode + (0b000001<<26) + 0b110010;
@@ -1298,7 +1301,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 315 "lex.l"
+#line 318 "lex.l"
 {
             printf("FMVTR\n");
             bcode = bcode + (0b000001<<26) + 0b110101;
@@ -1308,7 +1311,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 321 "lex.l"
+#line 324 "lex.l"
 {
             if(mode != ALIGN) 
               printf("integer: %s\n", yytext);
@@ -1386,7 +1389,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 395 "lex.l"
+#line 398 "lex.l"
 {
           printf("register: %s\n", yytext);
   
@@ -1454,7 +1457,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 459 "lex.l"
+#line 462 "lex.l"
 {
                 printf("offsetreg: %s\n",yytext);
                 int h = 0;
@@ -1506,7 +1509,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 507 "lex.l"
+#line 510 "lex.l"
 {
              if(mode == INIT){
                 printf("label: %s (pos %d)\n", yytext, curr_pos); 
@@ -1564,23 +1567,23 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 561 "lex.l"
+#line 564 "lex.l"
 ;
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 562 "lex.l"
+#line 565 "lex.l"
 ;
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 563 "lex.l"
+#line 566 "lex.l"
 ;
 	YY_BREAK
 case 50:
 /* rule 50 can match eol */
 YY_RULE_SETUP
-#line 564 "lex.l"
+#line 567 "lex.l"
 {
             if(return_flag){
                 return_flag--;
@@ -1596,7 +1599,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 577 "lex.l"
+#line 580 "lex.l"
 { BEGIN(COMMENT);
              printf("comment\n");
              yymore();
@@ -1605,7 +1608,7 @@ YY_RULE_SETUP
 case 52:
 /* rule 52 can match eol */
 YY_RULE_SETUP
-#line 581 "lex.l"
+#line 584 "lex.l"
 {
             if(return_flag){
                 return_flag--;
@@ -1621,10 +1624,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 594 "lex.l"
+#line 597 "lex.l"
 ECHO;
 	YY_BREAK
-#line 1628 "lex.c"
+#line 1631 "lex.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2619,7 +2622,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 594 "lex.l"
+#line 597 "lex.l"
 
 
 

@@ -3,9 +3,8 @@
 #include <string.h>
 #include <math.h>
 
-#define CODENUM 2048
-#define DATANUM 2048
-#define MEMSIZE 4096
+#define CODENUM 131072
+#define MEMSIZE 131072
 
 void print_info(void);
 union uv { float f; int i; };
@@ -18,7 +17,6 @@ int last = 0;
 
 //データ構造
    int mem_code[CODENUM];
-   int mem_data[DATANUM];
    int reg[32] = {0};
    float freg[32];
    int pc = 0;
