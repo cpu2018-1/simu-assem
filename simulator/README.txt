@@ -1,8 +1,8 @@
 形式について
 
 ./main BFILE [IFILE] [option]	([]は任意)
-BFILE	:出力用ファイルの名前
-IFILE	:入力用ファイルの名前
+BFILE	:バイトコードのファイルの名前
+IFILE	:入力ファイルの名前
 option	:-dのみ
 
 
