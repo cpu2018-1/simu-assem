@@ -100,7 +100,9 @@ int main (int argc, char *argv[]){
              jaddr = jaddr | 0xfc000000;
         reg[0] = 0;
         freg[0] = 0;
-
+      
+        if(code == 0)
+          break;
 
         switch (opecode){
 
@@ -183,12 +185,6 @@ int main (int argc, char *argv[]){
                 strcpy(currop, "jal");
                 printf("jal %d\n", pc);
                 break;
-            case 0b100010:
-                //J
-                pc = pc + jaddr;
-                strcpy(currop, "j");
-                printf("j %d\n", pc);
-                break;
             case 0b001110:
                 //JALR
                 tmp = pc;
@@ -196,12 +192,6 @@ int main (int argc, char *argv[]){
                 reg[31] = tmp + 1;
                 strcpy(currop, "jalr");
                 printf("jalr %d\n", rs);
-                break;
-            case 0b101010:
-                //JR
-                pc = reg[rs];
-                strcpy(currop, "jr");
-                printf("jr %d\n", rs);
                 break;
             case 0b000010:
                 //BEQ
