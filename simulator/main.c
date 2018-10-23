@@ -29,9 +29,12 @@ int last = 0;
 int main (int argc, char *argv[]){
   
     FILE *fp;
+    FILE *infp;
     int num;
     char name[64];
+    char inname[64];
     union uv v = {0};
+    
 
     if(argc > 1){
 
@@ -40,11 +43,28 @@ int main (int argc, char *argv[]){
     }
 
     if(argc > 2){
-    
+
         if(strcmp(argv[2], "-d") == 0){
             printf("<debug mode>\n");
             debug = 1;    
         
+        }else{
+
+            strcpy(inname, argv[2]);
+            infp = fopen(inname,"rb");
+            if( infp == NULL ){
+                fputs( "ファイルオープンに失敗しました。\n", stderr );
+                exit( EXIT_FAILURE );
+            } 
+
+            if(argc > 3){
+
+                if(strcmp(argv[argc-1], "-d") == 0){
+                    printf("<debug mode>\n");
+                    debug = 1;    
+                }
+            }
+
         }
 
     }
@@ -59,6 +79,7 @@ int main (int argc, char *argv[]){
         fputs( "読み込み中にエラーが発生しました。\n", stderr );
         exit( EXIT_FAILURE );
     }
+
 
     //処理を書く
     while(0 <= pc && pc < num){
@@ -79,9 +100,13 @@ int main (int argc, char *argv[]){
         int jaddr = code & 0x3ffffff;
           if(jaddr >> 25)
              jaddr = jaddr | 0xfc000000;
+        reg[0] = 0;
+        freg[0] = 0;
+
 
         switch (opecode){
 
+            int tmp;
             case 0b110000:
                 //LUI
                 reg[rd] = (imm << 16) | (reg[rs] & 0b1111111111111111);
@@ -161,9 +186,10 @@ int main (int argc, char *argv[]){
                 printf("jal %d\n", pc);
                 break;
             case 0b001110:
-                //JALR 順番を変えることはok?
+                //JALR
+                tmp = pc;
                 pc = reg[rs];
-                reg[31] = pc + 1;
+                reg[31] = tmp + 1;
                 strcpy(currop, "jalr");
                 printf("jalr %d\n", rs);
                 break;
@@ -221,12 +247,17 @@ int main (int argc, char *argv[]){
             case 0b000011:
                 //OUT
                 io = reg[rs] & 0b11111111;
+                fputc(io, stderr);
                 pc++;
                 strcpy(currop, "out");
                 printf("out\n");
                 break;
             case 0b001011:
                 //IN
+                if( fread(&io, sizeof(int), 1, infp ) < 1 ){
+                     fputs( "読み込み中にエラーが発生しました。\n", stderr );
+                    // exit( EXIT_FAILURE );
+                }
                 reg[rd] = 0xffffff & (io & 0xff);
                 pc++;
                 strcpy(currop, "in");
