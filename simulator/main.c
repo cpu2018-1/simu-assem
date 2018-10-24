@@ -35,9 +35,7 @@ int main (int argc, char *argv[]){
     
 
     if(argc > 1){
-
-        strcpy(name, argv[1]);
-        
+        strcpy(name, argv[1]);        
     }
 
     if(argc > 2){
@@ -354,7 +352,7 @@ int main (int argc, char *argv[]){
                       reg[rd] = (int) freg[rs];
                       pc++;
                       strcpy(currop, "ftoi");
-                      printf("fadd r%d f%d\n", rd, rs);
+                      printf("ftoi r%d f%d\n", rd, rs);
                       break;
                     case 0b110010:
                       //FMVFR
