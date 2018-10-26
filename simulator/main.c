@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "float.h"
 
 #define CODENUM 131072
 #define MEMSIZE 131072
@@ -279,77 +280,77 @@ int main (int argc, char *argv[]){
 
                     case 0b100:
                       //FADD
-                      freg[rd] = freg[rs] + freg[rt];
+                      freg[rd] = fadd(freg[rs], freg[rt]);
                       pc++;
                       strcpy(currop, "fadd");
                       printf("fadd f%d f%d f%d\n", rd, rs, rt);
                       break;
                     case 0b1000:
                       //FSUB
-                      freg[rd] = freg[rs] - freg[rt];
+                      freg[rd] = fsub(freg[rs], freg[rt]);
                       pc++;
                       strcpy(currop, "fsub");
                       printf("fsub f%d f%d f%d\n", rd, rs, rt);
                       break;
                     case 0b1100:
                       //FMUL
-                      freg[rd] = freg[rs] * freg[rt];
+                      freg[rd] = fmul(freg[rs], freg[rt]);
                       pc++;
                       strcpy(currop, "fmul");
                       printf("fmul f%d f%d f%d\n", rd, rs, rt);
                       break;
                     case 0b10000:
                       //FDIV
-                      freg[rd] = freg[rs] / freg[rt];
+                      freg[rd] = fdiv(freg[rs], freg[rt]);
                       pc++;
                       strcpy(currop, "fdiv");
                       printf("fdiv f%d f%d f%d\n", rd, rs, rt);
                       break;
                     case 0b10101:
                       //FEQ
-                      reg[rd] = (freg[rs] == freg[rt] ? 1 : 0);
+                      reg[rd] = feq(freg[rs], freg[rt]);
                       pc++;
                       strcpy(currop, "feq");
                       printf("feq r%d f%d f%d\n", rd, rs, rt);
                       break;
                     case 0b11001:
                       //FLT
-                      reg[rd] = (freg[rs] < freg[rt] ? 1 : 0);
+                      reg[rd] = flt(freg[rs], freg[rt]);
                       pc++;
                       strcpy(currop, "flt");
                       printf("flt r%d f%d f%d\n", rd, rs, rt);
                       break;
                     case 0b11101:
                       //FLE
-                      reg[rd] = (freg[rs] <= freg[rt] ? 1 : 0);
+                      reg[rd] = fle(freg[rs], freg[rt]);
                       pc++;
                       strcpy(currop, "fle");
                       printf("fle r%d f%d f%d\n", rd, rs, rt);
                       break;
                     case 0b100000:
                       //FSQRT
-                      freg[rd] = sqrt(freg[rs]);
+                      freg[rd] = fsqrt(freg[rs]);
                       pc++;
                       strcpy(currop, "fsqrt");
                       printf("fsqrt f%d f%d\n", rd, rs);
                       break;
                     case 0b100100:
                       //FNEG
-                      freg[rd] = -freg[rs];
+                      freg[rd] = fneg(freg[rs]);
                       pc++;
                       strcpy(currop, "fneg");
                       printf("fneg f%d f%d\n", rd, rs);
                       break;
                     case 0b101010:
                       //ITOF
-                      freg[rd] = (float) reg[rs];
+                      freg[rd] = itof(reg[rs]);
                       pc++;
                       strcpy(currop, "itof");
                       printf("itof f%d r%d\n", rd, rs);
                       break;
                     case 0b101101:
                       //FTOI
-                      reg[rd] = (int) freg[rs];
+                      reg[rd] = ftoi(freg[rs]);
                       pc++;
                       strcpy(currop, "ftoi");
                       printf("ftoi r%d f%d\n", rd, rs);
