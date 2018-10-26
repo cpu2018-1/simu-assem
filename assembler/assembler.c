@@ -632,6 +632,13 @@ typedef struct symbol_list{
 
 } symbol_list;
 
+typedef struct slabinfo{
+
+   char *label;
+   int pc;
+   int self_linenum;
+
+} slabinfo;
 
 int codebuffer[BUFSIZE];
 int curr_pos = 0;
@@ -642,6 +649,10 @@ symbol_list *undef_symbol;
 int bcode = 0;
 int argnum = 1;
 int return_flag = 0;
+int linenum = 1;
+int labelnum = 0;
+int linebuffer[BUFSIZE];
+slabinfo *labinfo_buffer[BUFSIZE];
 enum Mode mode = INIT;
 
 void add_to_buffer(int bc);
@@ -652,7 +663,7 @@ void search_undef(char sb[]);
   
 
 
-#line 656 "lex.c"
+#line 667 "lex.c"
 
 #define INITIAL 0
 #define COMMENT 1
@@ -836,10 +847,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 62 "lex.l"
+#line 73 "lex.l"
 
 
-#line 843 "lex.c"
+#line 854 "lex.c"
 
 	if ( !(yy_init) )
 		{
@@ -931,7 +942,7 @@ do_action:	/* This label is used only to access EOF actions. */
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(COMMENT):
 case YY_STATE_EOF(ARGS):
-#line 64 "lex.l"
+#line 75 "lex.l"
 {
             printf("END\n"); 
             if (return_flag--){
@@ -952,22 +963,35 @@ case YY_STATE_EOF(ARGS):
             fwrite(codebuffer, sizeof(int), curr_pos+1, f);
             fclose(f);
 
+            FILE *sf = fopen("sub.txt", "w");
+            fprintf(sf, "%d ", curr_pos);
+            fprintf(sf, "%d\n", labelnum);
+            for(int i = 0; i < curr_pos; i++){              
+                  fprintf(sf, "%d\n", linebuffer[i]);
+            }
+            for(int i = 0; i < labelnum; i++){
+                
+                slabinfo *lp = labinfo_buffer[i];
+                fprintf(sf, "%d %d %s\n", lp->pc, lp->self_linenum, lp->label);
+
+            }
+
             return 0;
            }
 	YY_BREAK
 case 1:
 YY_RULE_SETUP
-#line 86 "lex.l"
+#line 110 "lex.l"
 printf(".TEXT\n");
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 87 "lex.l"
+#line 111 "lex.l"
 printf(".DATA\n");
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 88 "lex.l"
+#line 112 "lex.l"
 {
               printf(".GLOBAL\n");
               
@@ -981,7 +1005,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 98 "lex.l"
+#line 122 "lex.l"
 {
               printf(".ALIGN\n");
               mode = ALIGN;
@@ -989,22 +1013,22 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 102 "lex.l"
+#line 126 "lex.l"
 ;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 103 "lex.l"
+#line 127 "lex.l"
 ;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 104 "lex.l"
+#line 128 "lex.l"
 ;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 107 "lex.l"
+#line 131 "lex.l"
 {
             printf("LUI\n");
             bcode += 0b110000<<26;
@@ -1016,7 +1040,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 115 "lex.l"
+#line 139 "lex.l"
 {
             printf("ADD\n");
             bcode += 0b001100<<26;
@@ -1028,7 +1052,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 123 "lex.l"
+#line 147 "lex.l"
 {
             printf("ADDI\n");
             bcode += 0b001000<<26;
@@ -1040,7 +1064,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 131 "lex.l"
+#line 155 "lex.l"
 {
             printf("SUB\n");
             bcode += 0b010100<<26;
@@ -1052,7 +1076,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 139 "lex.l"
+#line 163 "lex.l"
 {
             printf("SLL\n");
             bcode += 0b011100<<26;
@@ -1064,7 +1088,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 147 "lex.l"
+#line 171 "lex.l"
 {
             printf("SLLI\n");
             bcode += 0b011000<<26;
@@ -1076,7 +1100,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 155 "lex.l"
+#line 179 "lex.l"
 {
             printf("SRL\n");
             bcode += 0b100100<<26;
@@ -1088,7 +1112,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 163 "lex.l"
+#line 187 "lex.l"
 {
             printf("SRLI\n");
             bcode += 0b100000<<26;
@@ -1100,7 +1124,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 171 "lex.l"
+#line 195 "lex.l"
 {
             printf("SRA\n");
             bcode += 0b101100<<26;
@@ -1112,7 +1136,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 179 "lex.l"
+#line 203 "lex.l"
 {
             printf("SRAI\n");
             bcode += 0b101000<<26;
@@ -1124,7 +1148,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 187 "lex.l"
+#line 211 "lex.l"
 {
             printf("JAL\n");
             bcode += 0b000110<<26;
@@ -1135,7 +1159,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 194 "lex.l"
+#line 218 "lex.l"
 {
             printf("J\n");
             bcode += 0b100010<<26;
@@ -1146,7 +1170,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 201 "lex.l"
+#line 225 "lex.l"
 {
             printf("JALR\n");
             bcode += 0b001110<<26;
@@ -1157,7 +1181,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 208 "lex.l"
+#line 232 "lex.l"
 {
             printf("JR\n");
             bcode += 0b101010<<26;
@@ -1168,7 +1192,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 215 "lex.l"
+#line 239 "lex.l"
 {
             printf("BEQ\n");
             bcode += 0b000010<<26;
@@ -1179,7 +1203,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 222 "lex.l"
+#line 246 "lex.l"
 {
             printf("BNE\n");
             bcode += 0b001010<<26;
@@ -1190,7 +1214,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 229 "lex.l"
+#line 253 "lex.l"
 {
             printf("BLT\n");
             bcode += 0b010010<<26;
@@ -1201,7 +1225,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 236 "lex.l"
+#line 260 "lex.l"
 {
             printf("BLE\n");
             bcode += 0b011010<<26;
@@ -1212,7 +1236,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 243 "lex.l"
+#line 267 "lex.l"
 {
             printf("LW\n");
             bcode += 0b001111<<26;
@@ -1223,7 +1247,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 250 "lex.l"
+#line 274 "lex.l"
 {
             printf("SW\n");
             bcode += 0b000111<<26;
@@ -1234,7 +1258,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 257 "lex.l"
+#line 281 "lex.l"
 {
             printf("OUT\n");
             bcode += 0b000011<<26;
@@ -1245,7 +1269,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 264 "lex.l"
+#line 288 "lex.l"
 {
             printf("IN\n");
             bcode += 0b001011<<26;
@@ -1256,7 +1280,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 271 "lex.l"
+#line 295 "lex.l"
 {
             printf("FADD\n");
             bcode = bcode + (0b000001<<26) + 0b100;
@@ -1267,7 +1291,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 278 "lex.l"
+#line 302 "lex.l"
 {
             printf("FSUB\n");
             bcode = bcode + (0b000001<<26) + 0b1000;
@@ -1278,7 +1302,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 285 "lex.l"
+#line 309 "lex.l"
 {
             printf("FMUL\n");
             bcode = bcode + (0b000001<<26) + 0b1100;
@@ -1289,7 +1313,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 292 "lex.l"
+#line 316 "lex.l"
 {
             printf("FDIV\n");
             bcode = bcode + (0b000001<<26) + 0b10000;
@@ -1300,7 +1324,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 299 "lex.l"
+#line 323 "lex.l"
 {
             printf("FEQ\n");
             bcode = bcode + (0b000001<<26) + 0b10101;
@@ -1311,7 +1335,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 306 "lex.l"
+#line 330 "lex.l"
 {
             printf("FLT\n");
             bcode = bcode + (0b000001<<26) + 0b11001;
@@ -1322,7 +1346,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 313 "lex.l"
+#line 337 "lex.l"
 {
             printf("FLE\n");
             bcode = bcode + (0b000001<<26) + 0b11101;
@@ -1333,7 +1357,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 320 "lex.l"
+#line 344 "lex.l"
 {
             printf("FSQRT\n");
             bcode = bcode + (0b000001<<26) + 0b100000;
@@ -1344,7 +1368,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 327 "lex.l"
+#line 351 "lex.l"
 {
             printf("FNEG\n");
             bcode = bcode + (0b000001<<26) + 0b100100;
@@ -1355,7 +1379,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 334 "lex.l"
+#line 358 "lex.l"
 {
             printf("ITOF\n");
             bcode = bcode + (0b000001<<26) + 0b101010;
@@ -1366,7 +1390,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 341 "lex.l"
+#line 365 "lex.l"
 {
             printf("FTOI\n");
             bcode = bcode + (0b000001<<26) + 0b101101;
@@ -1377,7 +1401,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 348 "lex.l"
+#line 372 "lex.l"
 {
             printf("FMVFR\n");
             bcode = bcode + (0b000001<<26) + 0b110010;
@@ -1388,7 +1412,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 355 "lex.l"
+#line 379 "lex.l"
 {
             printf("FMVTR\n");
             bcode = bcode + (0b000001<<26) + 0b110101;
@@ -1399,7 +1423,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 362 "lex.l"
+#line 386 "lex.l"
 {
              
                 char tmp[64];
@@ -1407,6 +1431,15 @@ YY_RULE_SETUP
                 tmp[strlen(tmp)-1] = '\0';
                 printf("label: %s (pos %d)\n", tmp, curr_pos); 
                 
+                char *tp = (char *) malloc(sizeof(char)*64);
+                strcpy(tp, tmp);
+                slabinfo *sip = (slabinfo *) malloc(sizeof(slabinfo));
+                sip->label = tp;
+                sip->pc = curr_pos;
+                sip->self_linenum = linenum;
+                labinfo_buffer[labelnum] = sip;
+                labelnum++;       
+
                 //定義用
                 symbol_list *sl;
                 sl = (symbol_list *)malloc(sizeof(symbol_list));
@@ -1422,7 +1455,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 381 "lex.l"
+#line 414 "lex.l"
 {
             if(mode != ALIGN) 
               printf("integer: %s\n", yytext);
@@ -1500,7 +1533,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 455 "lex.l"
+#line 488 "lex.l"
 {
           printf("register: %s\n", yytext);
   
@@ -1568,7 +1601,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 519 "lex.l"
+#line 552 "lex.l"
 {
                 printf("offsetreg: %s\n",yytext);
                 int h = 0;
@@ -1620,7 +1653,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 567 "lex.l"
+#line 600 "lex.l"
 {
              
                 printf("variable: %s (pos %d)\n", yytext, curr_pos);
@@ -1661,29 +1694,32 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 604 "lex.l"
+#line 637 "lex.l"
 ;
 	YY_BREAK
 case 49:
 /* rule 49 can match eol */
 YY_RULE_SETUP
-#line 605 "lex.l"
-putchar('\n'); 
+#line 638 "lex.l"
+{ 
+            linenum++;
+            putchar('\n');
+          }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 606 "lex.l"
+#line 642 "lex.l"
 ;
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 607 "lex.l"
+#line 643 "lex.l"
 ;
 	YY_BREAK
 case 52:
 /* rule 52 can match eol */
 YY_RULE_SETUP
-#line 608 "lex.l"
+#line 644 "lex.l"
 {
             if(return_flag){
                 return_flag--;
@@ -1693,6 +1729,7 @@ YY_RULE_SETUP
             }
             argnum = 1;
             bcode = 0;
+            linenum++;
             mode = INIT;
             BEGIN(INITIAL);
             putchar('\n');
@@ -1700,7 +1737,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 622 "lex.l"
+#line 659 "lex.l"
 { BEGIN(COMMENT);
              printf("comment\n");
              yymore(); 
@@ -1708,7 +1745,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 626 "lex.l"
+#line 663 "lex.l"
 { BEGIN(COMMENT);
              printf("comment\n");
              yymore();
@@ -1716,13 +1753,13 @@ YY_RULE_SETUP
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 630 "lex.l"
+#line 667 "lex.l"
 ; 
 	YY_BREAK
 case 56:
 /* rule 56 can match eol */
 YY_RULE_SETUP
-#line 631 "lex.l"
+#line 668 "lex.l"
 {
             if(return_flag){
                 return_flag--;
@@ -1732,6 +1769,7 @@ YY_RULE_SETUP
               
             argnum = 1;
             bcode = 0;
+            linenum++;
             mode = INIT;
             putchar('\n');
             BEGIN(INITIAL);
@@ -1739,10 +1777,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 645 "lex.l"
+#line 683 "lex.l"
 ECHO;
 	YY_BREAK
-#line 1746 "lex.c"
+#line 1784 "lex.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2737,7 +2775,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 645 "lex.l"
+#line 683 "lex.l"
 
 
 
@@ -2753,6 +2791,7 @@ int main(int argc, char** argv){
 void add_to_buffer(int bc){
 
       codebuffer[curr_pos] = bc;
+      linebuffer[curr_pos] = linenum;
       curr_pos++;
 
 }
