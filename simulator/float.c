@@ -3,48 +3,24 @@
 #include "float.h"
 
 //必要に応じて実装を変更してください
-int cut(int a,int left,int right){
-    int i,r,bit;
-    r = 0;
-    for(i = right;i <= left;i++){
-	bit = (a >> i) & 1;
-	r |= (bit << i);
-    }
-    r = r >> right;
-    return r;   
-}
-
-int ftobit(float a){
-    int r;
-    r = *((int *)&a);
-    return r;
-}
-
-float bittof(int a){
-    float r;
-    r = *((float *)&a);
-    return r;
-}
 
 float fadd(float a, float b){
-    int x1,x2,s1,s2,e1,e2,m1,m2;
-    int se,sm,m1b,m2b,mya;
-    int eya,eyb,ey;
-    int myb,my,y;
-    int i;
+    unsigned int x1,x2,s1,s2,e1,e2,m1,m2;
+    unsigned int se,sm,m1b,m2b,mya;
+    unsigned int eya,eyb,ey;
+    unsigned int myb,my,y;
+    unsigned int i;
     float r;
 
-    x1 = ftobit(a);
-    x2 = ftobit(b);
-    if (x1 < 0) s1 = 1;
-    else s1 = 0;
-    e1 = cut(x1,30,23);
-    m1 = cut(x1,22,0);
-    if (x2 < 0) s2 = 1;
-    else s2 = 0;
-    e2 = cut(x2,30,23);
-    m2 = cut(x2,22,0);
-    if(cut(x2,30,0) > cut(x1,30,0)){
+    x1 = *((unsigned int *)&a);
+    x2 = *((unsigned int *)&b);
+    s1 = x1 >> 31;
+    e1 = (x1 & 0x7f800000) >> 23;
+    m1 = x1 & 0x7fffff;
+    s2 = x2 >> 31;
+    e2 = (x2 & 0x7f800000) >> 23;
+    m2 = x2 & 0x7fffff;
+    if((x2 & 0x7fffffff) > (x1 & 0x7fffffff)){
 	i = m2;
 	m2 = m1;
 	m1 = i;
@@ -72,11 +48,10 @@ float fadd(float a, float b){
     if(e2 == 0) ey = e1;
     else ey = eyb;
     myb = mya << se;
-    myb = cut(myb,25,0);
     if(e2 == 0) my = m1;
-    else my = cut(myb,24,2);
+    else my = (myb & 0x1fffffd) >> 2;
     y = (s1 << 31) | (ey << 23) | my;
-    r = bittof(y);
+    r = *((float *)&y);
     return r;
 }
 
@@ -87,27 +62,25 @@ float fsub(float a, float b){
 }
 
 float fmul(float a, float b){
-    int x1,x2,s1,s2,sy,e1,e2,ey,m1,m2,my;
-    int flag,e1a,e2a,eya,y,mya2;
+    unsigned int x1,x2,s1,s2,sy,e1,e2,ey,m1,m2,my;
+    unsigned int flag,e1a,e2a,eya,y,mya2;
     long mya;
     float r;
-    x1 = ftobit(a);
-    x2 = ftobit(b);
-    if(x1 < 0) s1 = 1;
-    else s1 = 0;
-    e1 = cut(x1,30,23);
-    m1 = cut(x1,22,0);
-    if(x2 < 0) s2 = 1;
-    else s2 = 0;
-    e2 = cut(x2,30,23);
-    m2 = cut(x2,22,0);
+    x1 = *((unsigned int *)&a);
+    x2 = *((unsigned int *)&b);
+    s1 = x1 >> 31;
+    e1 = (x1 & 0x7f800000) >> 23;
+    m1 = x1 & 0x7fffff;
+    s2 = x2 >> 31;
+    e2 = (x2 & 0x7f800000) >> 23;
+    m2 = x2 & 0x7fffff;
     sy = s1 ^ s2;
     mya = (long)((1 << 23) | m1) * (long)((1 << 23) | m2);
     mya = mya >> 20;
-    mya2 = (int)mya;
+    mya2 = (unsigned int)mya;
     flag = (mya2 >> 27) & 1;
-    if(flag == 1) my = cut(mya2,26,4);
-    else my = cut(mya2,25,3);
+    if(flag == 1) my = (mya2 & 0x7ffffff) >> 4;
+    else my = (mya2 & 0x3ffffff) >> 3;
     if(e2 == 0) e1a = 0;
     else e1a = e1;
     if(e1 == 0) e2a = 0;
@@ -116,21 +89,20 @@ float fmul(float a, float b){
     if(eya > 127) ey = eya - 127;
     else eya = 0;
     y = (sy << 31) | (ey << 23) | my;
-    r = bittof(y);
+    r = *((float *)&y);
 
     return r;
 
 }
 
 float fdiv(float a, float b){
-    int x1,x2,sa,ea,ma,mal,mx0,mx2;
-    x1 = ftobit(a);
-    x2 = ftobit(b);
-    if(x2 < 0) sa = 1;
-    else sa = 0; 
-    ea = cut(x2,30,23);
-    ma = cut(x2,22,0);
-    mal = cut(ma,22,12);
+    unsigned int x1,x2,sa,ea,ma,mal,mx0,mx2;
+    x1 = *((unsigned int *)&a);
+    x2 = *((unsigned int *)&b);
+    sa = x2 >> 31; 
+    ea = (x2 & 0x7fffffff) >> 23;
+    ma = x2 & 0x7fffff;
+    mal = ma >> 12;
 
     switch(mal){
     case 0:
@@ -8328,32 +8300,31 @@ float fdiv(float a, float b){
     }
 
     long max02a,mya;
-    int max02,flag,mix2a,mix2b,mix2;
-    int sx,sy,ex,mx;
-    int mya2,flaga,my,e2ab,eya,eyb,ey,y;
+    unsigned int max02,flag,mix2a,mix2b,mix2;
+    unsigned int sx,sy,ex,mx;
+    unsigned int mya2,flaga,my,e2ab,eya,eyb,ey,y;
     float r;
 
     max02a = (long)((1 << 23) | ma) * (long)((1 << 23) | mx2);
     max02a = max02a >> 20;
-    max02 = (int)max02a;
+    max02 = (unsigned int)max02a;
     flag = (max02 >> 27) & 1;
-    if(flag == 1) max02 = cut(max02,26,4);
-    else max02 = cut(max02,25,3);
+    if(flag == 1) max02 = (max02 & 0x7ffffff) >> 4;
+    else max02 = (max02 & 0x3ffffff) >> 3;
     mix2a = (1 << 24) | (mx0 << 1);
     mix2b = (1 << 23) | max02;
     mix2 = mix2a - mix2b;
-    mix2 = cut(mix2,22,0);
-    if(x1 < 0) sx = 1;
-    else sx = 0;
-    ex = cut(x1,30,23);
-    mx = cut(x1,22,0);
+    mix2 = mix2 & 0x7fffff;
+    sx = x1 >> 31;
+    ex = (x1 & 0x7fffffff) >> 23;
+    mx = x1 & 0x7fffff;
     sy = sx ^ sa;
     mya = (long)((1 << 23) | mx) * (long)((1 << 23) | mix2);
     mya = mya >> 20;
-    mya2 = (int)mya;
+    mya2 = (unsigned int)mya;
     flaga = (mya2 >> 27) & 1;
-    if(flaga == 1) my = cut(mya2,26,4);
-    else my = cut(mya2,25,3);
+    if(flaga == 1) my = (mya2 & 0x7ffffff) >> 4;
+    else my = (mya2 & 0x3ffffff) >> 3;
     if(ex == 0) e2ab = 0;
     else e2ab = 253;
     eya = ex + e2ab + flaga;
@@ -8361,7 +8332,7 @@ float fdiv(float a, float b){
     if(eya > eyb) ey = eya - eyb;
     else ey = 0;
     y = (sy << 31) | (ey << 23) | my;
-    r = bittof(y);
+    r = *((float *)&y);
 
     return r;
 
@@ -8369,12 +8340,12 @@ float fdiv(float a, float b){
 
 float fsqrt(float f){
 
-    int odd_flag,x,ex,mx,index,thalf_x0,half_x03;
-    x = ftobit(f);
-    ex = cut(x,30,23);
-    mx = cut(x,22,0);
-    index = cut(x,23,12);
-    odd_flag = cut(x,23,23); 
+    unsigned int odd_flag,x,ex,mx,index,thalf_x0,half_x03;
+    x = *((unsigned int *)&f);
+    ex = (x & 0x7fffffff) >> 23;
+    mx = x & 0x7fffff;
+    index = (x & 0xffffff) >> 12;
+    odd_flag = ex & 1; 
     switch(index){
     case 0:
         thalf_x0 = 17792753;
@@ -24763,25 +24734,25 @@ float fsqrt(float f){
     }
            
     long half_ax03,mya;
-    int mrb,mra,mr,ey,my,flag1,flag2,mya2,y;
+    unsigned int mrb,mra,mr,ey,my,flag1,flag2,mya2,y;
     float r;
     half_ax03 = (long)((1 << 23) | mx) * (long)half_x03;
     half_ax03 = half_ax03 >> 25;
-    mrb = (int)half_ax03;
+    mrb = (unsigned int)half_ax03;
     mra = thalf_x0 - mrb;
-    mr = cut(mra,22,0);
+    mr = mra & 0x7fffff;
     mya = (long)((1 << 23) | mr) * (long)((1 << 23) | mx);
-    if(cut(x,23,0) == 0x800000) flag1 = 1;
+    if((x & 0xffffff) == 0x800000) flag1 = 1;
     else flag1 = 0;
     if(ex == 0) ey = 0;
     else ey = 63 + (ex >> 1) + odd_flag - flag1;
     mya = mya >> 20;
-    mya2 = (int)mya;
+    mya2 = (unsigned int)mya;
     flag2 = (mya2 >> 27) & 1;
-    if(flag2 == 1) my = cut(mya2,26,4);
-    else my = cut(mya2,25,3);
+    if(flag2 == 1) my = (mya2 & 0x7ffffff) >> 4;
+    else my = (mya2 & 0x3ffffff) >> 3;
     y = (ey << 23) | my;
-    r = bittof(y);
+    r = *((float *)&y);
 
     return r;
 
@@ -24812,14 +24783,15 @@ int fle(float a, float b){
 }
 
 float itof(int x){
-    int sx,se,mxa,mxb;
-    int eya,sy,ey,my,mya,y;
-    int flag1;
-    int i,bit;
+    unsigned int xbit,sx,se,mxa,mxb;
+    unsigned int eya,sy,ey,my,mya,y;
+    unsigned int flag1;
+    unsigned int i,bit;
     float r;
-    if(x < 0) sx = 1;
-    else sx = 0;
-    mxa = cut(x,30,0);
+    
+    xbit = *((unsigned int *)&x);
+    sx = xbit >> 31;
+    mxa = xbit & 0x7fffffff;
     if(sx == 1){
 	mxb = (~mxa) & 0x7fffffff;
     }
@@ -24831,29 +24803,28 @@ float itof(int x){
     se = i;
     sy = sx;
     mya = mxb << se;
-    my = cut(mya,29,7) + cut(mya,6,6);
-    if(cut(mya,29,6) == 0xffffff) flag1 = 1;
+    my = ((mya & 0x3fffffff) >> 7) + ((mya >> 6) & 1);
+    if(((mya & 0x3fffffff) >> 6) == 0xffffff) flag1 = 1;
     else flag1 = 0;
     eya = 157 + flag1;
-    if(x == 0x80000000) ey = 158;
+    if(xbit == 0x80000000) ey = 158;
     else if (se == 31) ey = 0;
     else ey = eya - se;
     y = (sy << 31) | (ey << 23) | my;
-    r = bittof(y);
+    r = *((float *)&y);
     
     return r;
 
 }
 
 int ftoi(float f){
-    int x,sx,ex,mx,se;
+    unsigned int x,sx,ex,mx,se;
     unsigned int mya,myb,myc,my;
-    int sy,y;
-    x = ftobit(f);
-    if(x < 0) sx = 1;
-    else sx = 0;
-    ex = cut(x,30,23);
-    mx = cut(x,22,0);
+    unsigned int sy,y;
+    x = *((unsigned int *)&f);
+    sx = x >> 31;
+    ex = (x & 0x7fffffff) >> 23;
+    mx = x & 0x7fffff;
     mya = (1 << 31) | (mx << 8);
     if(ex <= 157) se = 157 - ex;
     else se = 255;
