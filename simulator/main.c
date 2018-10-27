@@ -6,6 +6,7 @@
 
 #define CODENUM 131072
 #define MEMSIZE 131072
+#define OPNUM 35
 
 void print_info(void);
 union uv { float f; int i; };
@@ -17,20 +18,32 @@ typedef struct {
 
 } ssubinfo;
 
+ssubinfo subinfo[CODENUM]; 
+
+char *opdata[OPNUM] = {"lui", "add", "addi", "sub", "sll", "slli", "srl", 
+                  "srli", "sra", "srai", "jal", "j", "jalr", "jr",
+                  "beq", "bne", "blt", "ble", "lw", "sw", "out", "in",
+                  "fadd", "fsub", "fmul", "fdiv", "feq", "flt", "fle", 
+                  "fsqrt", "fneg", "itof", "ftoi", "fmvfr", "fmvtr"};
+
 int debug = 0;
 int sub = 0;
-int jump = 0;
+int op = 0;
+int line = 0;
+int label = 0;
+int last = 0;
+
 char jumpop[16];
 char currop[16];
-int last = 0;
-ssubinfo subinfo[CODENUM]; 
+int jumpline = 0;
+char jumplabel[16];
 
 //データ構造
    int mem_code[CODENUM];
+   int mem[MEMSIZE];
    int reg[32] = {0};
    float freg[32];
    int pc = 0;
-   int mem[MEMSIZE];
    int io;  
 
 
@@ -128,7 +141,6 @@ int main (int argc, char *argv[]){
     while(0 <= pc && pc < num){
 
         int code = mem_code[pc];
-
         int opecode = (code >> 26) & 0b111111;
         int fopecode = code & 0b11111111111;
         int rd = (code >> 21) & 0b11111;
@@ -146,18 +158,21 @@ int main (int argc, char *argv[]){
         reg[0] = 0;
         freg[0] = 0;
       
+        int tmppc = pc;
         if(code == 0)
           break;
         
         if(debug && sub){
 
-          char *cp = subinfo[pc].label;
-          if( cp != NULL )
-            printf("\e[33m<%s> \e[0m\n", cp);
-          printf("%d:\t ", subinfo[pc].linenum);
-
+            char *cp = subinfo[pc].label;
+            if( cp != NULL )
+                printf("\e[33m<%s> \e[0m\n", cp);
+            
+            printf("%d:\t ", subinfo[pc].linenum); 
+        
         }
 
+    
         switch (opecode){
 
             int tmp;
@@ -556,16 +571,31 @@ int main (int argc, char *argv[]){
 
             if(debug){
 
-                if(jump == 0 && last == 0){
+                if(op == 0 && line == 0 && label == 0 && last == 0){
                   print_info();
-                }else if(jump == 1){
-                
+                }else if(op == 1){
+                  
                   if(strcmp(jumpop, currop) == 0){
-                      jump = 0;
+                      op = 0;
                       print_info();
                   }
                 
+                }else if(line == 1){
+
+                  if(jumpline == subinfo[tmppc].linenum || jumpline == subinfo[tmppc].l_linenum){
+                      line = 0;
+                      print_info();
+                  }
+
+                }else if(label == 1){
+                  
+                   if(subinfo[tmppc].label != NULL && strcmp(jumplabel, subinfo[tmppc].label) == 0){
+                      label = 0;
+                      print_info();
+                   }
+
                 }
+
             }
     }
 
@@ -600,13 +630,61 @@ void print_info(void){
       }
 
       if(strcmp(comm, "j") == 0 || strcmp(comm, "jump") == 0){
-          jump = 1;
+        
+        char arg[32];
+        scanf("%s", arg);
+
+        int ln = atoi(arg);
+        if(ln != 0){
+            line = 1;
+            jumpline = ln;
+            putchar('\n');
+            break;
+        }else{
+
+            for(int i = 0; i < OPNUM; i++){
+                
+                if(strcmp(arg, opdata[i]) == 0){
+                      op = 1;
+                      strcpy(jumpop, arg);
+                      goto escape;
+                }
+
+            }
+
+            label = 1;
+            strcpy(jumplabel, arg);
+
+            escape:
+            putchar('\n');
+            break;
+
+        }
+
+      }
+
+      if(strcmp(comm, "o") == 0 || strcmp(comm, "opecode") == 0){
+          op = 1;
           scanf("%s", jumpop);
           putchar('\n');
           break;
       }
 
-      if( strcmp(comm, "l") == 0 || strcmp(comm, "last") == 0){
+      if((strcmp(comm, "l") == 0 || strcmp(comm, "line") == 0) && sub == 1){
+          line = 1;
+          scanf("%d", &jumpline);
+          putchar('\n');
+          break;
+      }
+
+      if((strcmp(comm, "lb") == 0 || strcmp(comm, "label") == 0) && sub == 1){
+          label = 1;
+          scanf("%s", jumplabel);
+          putchar('\n');
+          break;
+      }
+
+      if( strcmp(comm, "ll") == 0 || strcmp(comm, "last") == 0){
           last = 1;
           putchar('\n');
           break;
