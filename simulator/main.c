@@ -36,7 +36,7 @@ int last = 0;
 char jumpop[16];
 char currop[16];
 int jumpline = 0;
-char jumplabel[16];
+char jumplabel[64];
 
 //データ構造
    int mem_code[CODENUM];
