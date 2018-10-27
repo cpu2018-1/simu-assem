@@ -1,6 +1,10 @@
 #ifndef FLOAT_H
 #define FLOAT_H
 
+int cut(int a,int left,int right);
+int ftobit(float a);
+float bittof(int a);
+
 // a op b
 float fadd(float a, float b);
 float fsub(float a, float b);
