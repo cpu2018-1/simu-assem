@@ -24742,10 +24742,10 @@ float fsqrt(float f){
     mra = thalf_x0 - mrb;
     mr = mra & 0x7fffff;
     mya = (long)((1 << 23) | mr) * (long)((1 << 23) | mx);
-    if((x & 0xffffff) == 0x800000) flag1 = 1;
+    if((x & 0xffffff) == 0x7fffff) flag1 = 1;
     else flag1 = 0;
     if(ex == 0) ey = 0;
-    else ey = 63 + (ex >> 1) + odd_flag - flag1;
+    else ey = 63 + (ex >> 1) + odd_flag + flag1;
     mya = mya >> 20;
     mya2 = (unsigned int)mya;
     flag2 = (mya2 >> 27) & 1;
