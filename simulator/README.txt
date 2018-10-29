@@ -17,6 +17,7 @@ l(line)    N		:アセンブリのN行目を実行したところまで移りま�
 lb(label)  LABEL	:アセンブリのLABELがさす命令を実行したところまで移ります
 o(opecode) OPECODE	:OPECODE命令を実行したところまで移ります(OPECODEは小文字)
 j(jump)    DEST		:上記3コマンドをまとめたものです(DESTは優先度の高い順にN > OPECODE > LABELとして判定)
+c(count)   N		:N回目の命令が実行されるところまで移ります(nは0からスタート)
 ll(last) 		:全命令が終了するところまで移ります
 q(quit)			:プログラムを終了します
 

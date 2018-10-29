@@ -31,12 +31,15 @@ int sub = 0;
 int op = 0;
 int line = 0;
 int label = 0;
+int count = 0;
 int last = 0;
 
 char jumpop[16];
 char currop[16];
 int jumpline = 0;
 char jumplabel[64];
+int jumpcount = 0;
+int currcount = 0;
 
 //データ構造
    int mem_code[CODENUM];
@@ -571,7 +574,7 @@ int main (int argc, char *argv[]){
 
             if(debug){
 
-                if(op == 0 && line == 0 && label == 0 && last == 0){
+                if(op == 0 && line == 0 && label == 0 && count == 0 && last == 0){
                   print_info();
                 }else if(op == 1){
                   
@@ -594,9 +597,19 @@ int main (int argc, char *argv[]){
                       print_info();
                    }
 
+                }else if(count == 1){
+
+                  if(jumpcount == currcount){
+                      count = 0;
+                      print_info();
+                  }
+
                 }
 
+                currcount++;
+
             }
+
     }
 
     if(debug && last)
@@ -680,6 +693,13 @@ void print_info(void){
       if((strcmp(comm, "lb") == 0 || strcmp(comm, "label") == 0) && sub == 1){
           label = 1;
           scanf("%s", jumplabel);
+          putchar('\n');
+          break;
+      }
+
+      if(strcmp(comm, "c") == 0 || strcmp(comm, "count") == 0){
+          count = 1;
+          scanf("%d", &jumpcount);
           putchar('\n');
           break;
       }
