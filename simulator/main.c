@@ -432,7 +432,7 @@ int main (int argc, char *argv[]){
                      fputs( "読み込み中にエラーが発生しました。\n", stderr );
                      exit( EXIT_FAILURE );
                 }
-                reg[rd] = 0xffffff00 & (int) io;
+                reg[rd] = 0x000000ff & (int) io;
                 pc++;
                 if(debug){
                   strcpy(currop, "in");
