@@ -47,7 +47,7 @@ int currcount = 0;
    int reg[32] = {0};
    float freg[32];
    int pc = 0;
-   int io;  
+   char io;  
 
 
 int main (int argc, char *argv[]){
@@ -428,11 +428,11 @@ int main (int argc, char *argv[]){
                 break;
             case 0b001011:
                 //IN
-                if( fread(&io, sizeof(int), 1, infp ) < 1 ){
+                if( fread(&io, sizeof(char), 1, infp ) < 1 ){
                      fputs( "読み込み中にエラーが発生しました。\n", stderr );
                      exit( EXIT_FAILURE );
                 }
-                reg[rd] = 0xffffff & (io & 0xff);
+                reg[rd] = 0xffffff00 & (int) io;
                 pc++;
                 if(debug){
                   strcpy(currop, "in");

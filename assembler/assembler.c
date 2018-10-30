@@ -995,8 +995,8 @@ YY_RULE_SETUP
 {
               printf(".GLOBAL\n");
               
-              //jに設定
-              bcode += 0b100010<<26;
+              //jalに設定
+              bcode += 0b000110<<26;
               return_flag++;
               mode = GLOBAL;
               BEGIN(ARGS);
