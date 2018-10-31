@@ -24791,7 +24791,7 @@ float itof(int x){
     sx = xbit >> 31;
     mxa = xbit & 0x7fffffff;
     if(sx == 1){
-	mxb = (~mxa) & 0x7fffffff;
+	mxb = ((~mxa) + 1) & 0x7fffffff;
     }
     else mxb = mxa;
     for(i = 0;i < 31;i++){
