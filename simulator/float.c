@@ -24800,7 +24800,8 @@ float itof(int x){
     }
     se = i;
     sy = sx;
-    mya = mxb << se;
+    if(se < 32) mya = mxb << se;
+    else mya = 0;
     my = ((mya & 0x3fffffff) >> 7) + ((mya >> 6) & 1);
     if(((mya & 0x3fffffff) >> 6) == 0xffffff) flag1 = 1;
     else flag1 = 0;
@@ -24826,10 +24827,11 @@ int ftoi(float f){
     mya = (1 << 31) | (mx << 8);
     if(ex <= 157) se = 157 - ex;
     else se = 255;
-    myb = (mya >> se) + 1;
+    if(se < 32) myb = (mya >> se) + 1;
+    else myb = 1;
     myc = myb >> 1;
     sy = sx;
-    if(sy == 1) my = ((~myc) & 0x7fffffff) + 1;
+    if(sy == 1) my = ((~myc) + 1) & 0x7fffffff;
     else my = myc;
     if(my == 0) y = 0;
     else y = (sy << 31) | my;
