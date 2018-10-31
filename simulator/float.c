@@ -5,53 +5,51 @@
 //必要に応じて実装を変更してください
 
 float fadd(float a, float b){
-    unsigned int x1,x2,s1,s2,e1,e2,m1,m2;
-    unsigned int se,sm,m1b,m2b,mya;
-    unsigned int eya,eyb,ey;
-    unsigned int myb,my,y;
-    unsigned int i;
+    unsigned int x1,x2,x1a,x2a,s1a,s2a,sy,e1a,e2a,ey,m1a,m2a,my;
+    unsigned int sm,m1b,m2b,mya,se,eya,eyb,myb,y;
+    int i,bit;
     float r;
 
     x1 = *((unsigned int *)&a);
     x2 = *((unsigned int *)&b);
-    s1 = x1 >> 31;
-    e1 = (x1 & 0x7f800000) >> 23;
-    m1 = x1 & 0x7fffff;
-    s2 = x2 >> 31;
-    e2 = (x2 & 0x7f800000) >> 23;
-    m2 = x2 & 0x7fffff;
-    if((x2 & 0x7fffffff) > (x1 & 0x7fffffff)){
-	i = m2;
-	m2 = m1;
-	m1 = i;
-	i = s2;
-	s2 = s1;
-	s1 = i;
-	i = e2;
-	e2 = e1;
-	e1 = i;
+    if((x1 & 0x7fffffff) < (x2 & 0x7fffffff)){
+	x1a = x2;
+	x2a = x1;
+    } else {
+	x1a = x1;
+	x2a = x2;
     }
-    sm = e1 - e2;
-    m1b = (1 << 24) | (m1 << 1);
-    m2b = (1 << 24) | (m2 << 1);
-    m2b = m2b >> sm;
-    if(s1 == s2) mya = m1b + m2b;
+    s1a = x1a >> 31;
+    e1a = (x1a >> 23) & 0xff;
+    m1a = x1a & 0x7fffff;
+    s2a = x2a >> 31;
+    e2a = (x2a >> 23) & 0xff;
+    m2a = x2a & 0x7fffff;
+    sm = e1a - e2a;
+    m1b = (1 << 24) | (m1a << 1);
+    if(sm < 32) m2b = ((1 << 24) | (m2a << 1)) >> sm;
+    else m2b = 0;
+    if(s1a == s2a) mya = m1b + m2b;
     else mya = m1b - m2b;
     for(i = 0;i < 26;i++){
-	if(mya >> (25 - i) == 1) break;
+	bit = (mya >> (25 - i)) & 1;
+	if(bit == 1) break;
     }
-    if(i == 26) i = 255;
-    se = i;
-    eya = e1 + 1;
+    if(i == 26) se = 255;
+    else se = i;
+    sy = s1a;
+    eya = e1a + 1;
     if(eya > se) eyb = eya - se;
     else eyb = 0;
-    if(e2 == 0) ey = e1;
+    if(e2a == 0) ey = e1a;
     else ey = eyb;
-    myb = mya << se;
-    if(e2 == 0) my = m1;
-    else my = (myb & 0x1fffffd) >> 2;
-    y = (s1 << 31) | (ey << 23) | my;
+    if (se < 32) myb = mya << se;
+    else myb = 0;
+    if(e2a == 0) my = m1a;
+    else my = (myb >> 2) & 0x7fffff;
+    y = (sy << 31) | (ey << 23) | my;
     r = *((float *)&y);
+    
     return r;
 }
 
@@ -87,7 +85,7 @@ float fmul(float a, float b){
     else e2a = e2;
     eya = e1a + e2a + flag;
     if(eya > 127) ey = eya - 127;
-    else eya = 0;
+    else ey = 0;
     y = (sy << 31) | (ey << 23) | my;
     r = *((float *)&y);
 
