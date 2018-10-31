@@ -12,7 +12,7 @@ option	:-dのみ
 デバッグモード(-d)のコマンドについて
 
 <移動用>
-n(next)			:次の命令に移ります
+n(next)			:次の命令に移ります(改行でも同じ)
 l(line)    N		:アセンブリのN行目を実行したところまで移ります
 lb(label)  LABEL	:アセンブリのLABELがさす命令を実行したところまで移ります
 o(opecode) OPECODE	:OPECODE命令を実行したところまで移ります(OPECODEは小文字)

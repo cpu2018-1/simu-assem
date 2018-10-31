@@ -418,13 +418,15 @@ int main (int argc, char *argv[]){
                 break;
             case 0b000011:
                 //OUT
+                if(debug){
+                  strcpy(currop, "out");
+                  printf("out\e[35m\n");
+                }
                 io = reg[rs] & 0b11111111;
                 fputc(io, stderr);
                 pc++;
-                if(debug){
-                  strcpy(currop, "out");
-                  printf("out\n");
-                }
+                if(debug)
+                  printf("(stderr)\e[0m\n");
                 break;
             case 0b001011:
                 //IN
@@ -630,12 +632,22 @@ int main (int argc, char *argv[]){
 void print_info(void){
 
     char comm[256];
+    char head;
     
     while(1){
 
       printf("\e[31m>\e[0m ");
+      
+      head = fgetc(stdin);
+      ungetc(head, stdin);
+      if(head == '\n'){
+          fgetc(stdin);
+          putchar('\n');
+          break;
+      }
 
       scanf("%s", comm);
+      fgetc(stdin);
 
       if(strcmp(comm, "n") == 0 || strcmp(comm, "next") == 0){
         putchar('\n');
@@ -646,11 +658,13 @@ void print_info(void){
         
         char arg[32];
         scanf("%s", arg);
+        fgetc(stdin);
 
         int ln = atoi(arg);
         if(ln != 0){
             line = 1;
             jumpline = ln;
+            printf("line = %d\n", ln);
             putchar('\n');
             break;
         }else{
@@ -679,6 +693,7 @@ void print_info(void){
       if(strcmp(comm, "o") == 0 || strcmp(comm, "opecode") == 0){
           op = 1;
           scanf("%s", jumpop);
+          fgetc(stdin);
           putchar('\n');
           break;
       }
@@ -686,6 +701,7 @@ void print_info(void){
       if((strcmp(comm, "l") == 0 || strcmp(comm, "line") == 0) && sub == 1){
           line = 1;
           scanf("%d", &jumpline);
+          fgetc(stdin);
           putchar('\n');
           break;
       }
@@ -693,6 +709,7 @@ void print_info(void){
       if((strcmp(comm, "lb") == 0 || strcmp(comm, "label") == 0) && sub == 1){
           label = 1;
           scanf("%s", jumplabel);
+          fgetc(stdin);
           putchar('\n');
           break;
       }
@@ -700,6 +717,7 @@ void print_info(void){
       if(strcmp(comm, "c") == 0 || strcmp(comm, "count") == 0){
           count = 1;
           scanf("%d", &jumpcount);
+          fgetc(stdin);
           putchar('\n');
           break;
       }
@@ -719,13 +737,13 @@ void print_info(void){
       if(strcmp(comm, "reg") == 0){
         
         for(int i = 0; i < 8; i++){
-          printf("%2d = %3d   %2d = %3d   %2d = %3d   %2d = %3d\n", 4*i, reg[4*i], 4*i+1, reg[4*i+1], 4*i+2, reg[4*i+2], 4*i+3, reg[4*i+3]);
+          printf("%2d = %5d      %2d = %5d      %2d = %5d      %2d = %5d\n", 4*i, reg[4*i], 4*i+1, reg[4*i+1], 4*i+2, reg[4*i+2], 4*i+3, reg[4*i+3]);
         }
       
       }else if(strcmp(comm, "freg") == 0){
         
         for(int i = 0; i < 8; i++){
-          printf("%2d = %.6f   %2d = %.6f   %2d = %.6f   %2d = %.6f\n", 4*i, freg[4*i], 4*i+1, freg[4*i+1], 4*i+2, freg[4*i+2], 4*i+3, freg[4*i+3]);
+          printf("%2d = %3.6f   %2d = %3.6f   %2d = %3.6f   %2d = %3.6f\n", 4*i, freg[4*i], 4*i+1, freg[4*i+1], 4*i+2, freg[4*i+2], 4*i+3, freg[4*i+3]);
         }
       
       }else if(strcmp(comm, "pc") == 0){
@@ -736,6 +754,7 @@ void print_info(void){
           
           int n;
           scanf("%d", &n);
+          fgetc(stdin);
           printf("%d\n", mem[n]);
 
       }else if(strcmp(comm, "io") == 0){
