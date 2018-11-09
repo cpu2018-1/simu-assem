@@ -6,6 +6,8 @@ SFILE	:デバッグ用の補助ファイルの名前
 IFILE	:入力ファイルの名前
 option	:-dのみ
 
+統計の出力先はstatistics.txt(各命令の割合を%で表示)
+
 
 
 

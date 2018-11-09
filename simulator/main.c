@@ -25,6 +25,7 @@ char *opdata[OPNUM] = {"lui", "add", "addi", "sub", "sll", "slli", "srl",
                   "beq", "bne", "blt", "ble", "lw", "sw", "out", "in",
                   "fadd", "fsub", "fmul", "fdiv", "feq", "flt", "fle", 
                   "fsqrt", "fneg", "itof", "ftoi", "fmvfr", "fmvtr"};
+int opcount[OPNUM] = {0};
 
 int debug = 0;
 int sub = 0;
@@ -55,6 +56,7 @@ int main (int argc, char *argv[]){
     FILE *fp;
     FILE *subfp;
     FILE *infp;
+    FILE *stfp;
     char name[64];
     char subname[64];
     char inname[64];
@@ -111,6 +113,8 @@ int main (int argc, char *argv[]){
 
     }
 
+    stfp = fopen("statistics.txt", "w");
+    
 
     //ファイル読み込み
     if( (num = fread(mem_code, sizeof(int), CODENUM, fp )) < 1 ){
@@ -183,6 +187,7 @@ int main (int argc, char *argv[]){
                 //LUI
                 reg[rd] = (imm << 16) | (reg[rs] & 0b1111111111111111);
                 pc++;
+                opcount[0]++;
                 if(debug){
                   strcpy(currop, "lui");
                   printf("lui r%d r%d %d\n", rd, rs, imm);
@@ -192,6 +197,7 @@ int main (int argc, char *argv[]){
                 //ADD
                 reg[rd] = reg[rs] + reg[rt];
                 pc++;
+                opcount[1]++;
                 if(debug){
                   strcpy(currop, "add");
                   printf("add r%d r%d r%d\n", rd, rs, rt);
@@ -201,6 +207,7 @@ int main (int argc, char *argv[]){
                 //ADDI
                 reg[rd] = reg[rs] + imm;
                 pc++;
+                opcount[2]++;
                 if(debug){
                   strcpy(currop, "addi");
                   printf("addi r%d r%d %d\n", rd, rs, imm);
@@ -210,6 +217,7 @@ int main (int argc, char *argv[]){
                 //SUB
                 reg[rd] = reg[rs] - reg[rt];
                 pc++;
+                opcount[3]++;
                 if(debug){
                   strcpy(currop, "sub");
                   printf("sub r%d r%d r%d\n", rd, rs, rt);
@@ -219,6 +227,7 @@ int main (int argc, char *argv[]){
                 //SLL
                 reg[rd] = reg[rs] << (reg[rt] & 0b11111);
                 pc++;
+                opcount[4]++;
                 if(debug){
                   strcpy(currop, "sll");
                   printf("sll r%d r%d r%d\n", rd, rs, rt);  
@@ -228,6 +237,7 @@ int main (int argc, char *argv[]){
                 //SLLI
                 reg[rd] = reg[rs] << (imm & 0b11111);
                 pc++;
+                opcount[5]++;
                 if(debug){
                   strcpy(currop, "slli");
                   printf("slli r%d r%d %d\n", rd, rs, imm);  
@@ -237,6 +247,7 @@ int main (int argc, char *argv[]){
                 //SRL
                 reg[rd] = (int)((unsigned)reg[rs] >> (reg[rt] & 0b11111));
                 pc++;
+                opcount[6]++;
                 if(debug){
                   strcpy(currop, "srl");
                   printf("srl r%d r%d r%d\n", rd, rs, rt);  
@@ -246,6 +257,7 @@ int main (int argc, char *argv[]){
                 //SRLI
                 reg[rd] = (int)((unsigned)reg[rs] >> (imm & 0b11111));
                 pc++;
+                opcount[7]++;
                 if(debug){
                   strcpy(currop, "srli");
                   printf("srli r%d r%d %d\n", rd, rs, imm);  
@@ -255,6 +267,7 @@ int main (int argc, char *argv[]){
                 //SRA
                 reg[rd] = reg[rs] >> (reg[rt] & 0b11111);
                 pc++;
+                opcount[8]++;
                 if(debug){
                   strcpy(currop, "sra");
                   printf("sra r%d r%d r%d\n", rd, rs, rt);  
@@ -264,6 +277,7 @@ int main (int argc, char *argv[]){
                 //SRAI
                 reg[rd] = reg[rs] >> (imm & 0b11111);
                 pc++;
+                opcount[9]++;
                 if(debug){
                   strcpy(currop, "srai");
                   printf("srai r%d r%d %d\n", rd, rs, imm);  
@@ -273,6 +287,7 @@ int main (int argc, char *argv[]){
                 //JAL
                 reg[31] = pc + 1;
                 pc = pc + jaddr;
+                opcount[10]++;
                 if(debug){
                   strcpy(currop, "jal");
                   if(sub){
@@ -289,6 +304,7 @@ int main (int argc, char *argv[]){
             case 0b100010:
                 //J
                 pc = pc + jaddr;
+                opcount[11]++;
                 if(debug){
                   strcpy(currop, "j");
                   if(sub){
@@ -307,6 +323,7 @@ int main (int argc, char *argv[]){
                 tmp = pc;
                 pc = reg[rs];
                 reg[31] = tmp + 1;
+                opcount[12]++;
                 if(debug){
                   strcpy(currop, "jalr");
                   if(sub)
@@ -318,6 +335,7 @@ int main (int argc, char *argv[]){
             case 0b101010:
                 //JR
                 pc = reg[rs];
+                opcount[13]++;
                 if(debug){
                   strcpy(currop, "jr");
                   if(sub)
@@ -328,6 +346,7 @@ int main (int argc, char *argv[]){
                 break;
             case 0b000010:
                 //BEQ
+                opcount[14]++;
                 if(debug){
                   strcpy(currop, "beq");
                   if(sub == 0)
@@ -346,6 +365,7 @@ int main (int argc, char *argv[]){
                 break;
             case 0b001010:
                 //BNE
+                opcount[15]++;
                 if(debug){
                   strcpy(currop, "bne");
                   if(sub == 0)
@@ -364,6 +384,7 @@ int main (int argc, char *argv[]){
                 break;
             case 0b010010:
                 //BLT
+                opcount[16]++;
                 if(debug){
                   strcpy(currop, "blt");
                   if(sub == 0)
@@ -382,6 +403,7 @@ int main (int argc, char *argv[]){
                 break;
             case 0b011010:
                 //BLE
+                opcount[17]++;
                 if(debug){
                   strcpy(currop, "ble");
                   if(sub == 0)
@@ -402,6 +424,7 @@ int main (int argc, char *argv[]){
                 //LW
                 reg[rd] = mem[reg[rs] + imm];
                 pc++;
+                opcount[18]++;
                 if(debug){
                   strcpy(currop, "lw");
                   printf("lw r%d r%d %d\n", rd, rs, imm);
@@ -411,6 +434,7 @@ int main (int argc, char *argv[]){
                 //SW
                 mem[reg[rs] + divimm] = reg[rt];
                 pc++;
+                opcount[19]++;
                 if(debug){
                   strcpy(currop, "sw");
                   printf("sw r%d r%d %d\n", rs, rt, divimm);
@@ -418,6 +442,7 @@ int main (int argc, char *argv[]){
                 break;
             case 0b000011:
                 //OUT
+                opcount[20]++;
                 if(debug){
                   strcpy(currop, "out");
                   printf("out\e[35m\n");
@@ -436,6 +461,7 @@ int main (int argc, char *argv[]){
                 }
                 reg[rd] = 0x000000ff & (int) io;
                 pc++;
+                opcount[21]++;
                 if(debug){
                   strcpy(currop, "in");
                   printf("in\n");
@@ -449,6 +475,7 @@ int main (int argc, char *argv[]){
                       //FADD
                       freg[rd] = fadd(freg[rs], freg[rt]);
                       pc++;
+                      opcount[22]++;
                       if(debug){
                         strcpy(currop, "fadd");
                         printf("fadd f%d f%d f%d\n", rd, rs, rt);
@@ -458,6 +485,7 @@ int main (int argc, char *argv[]){
                       //FSUB
                       freg[rd] = fsub(freg[rs], freg[rt]);
                       pc++;
+                      opcount[23]++;
                       if(debug){
                         strcpy(currop, "fsub");
                         printf("fsub f%d f%d f%d\n", rd, rs, rt);
@@ -467,6 +495,7 @@ int main (int argc, char *argv[]){
                       //FMUL
                       freg[rd] = fmul(freg[rs], freg[rt]);
                       pc++;
+                      opcount[24]++;
                       if(debug){
                         strcpy(currop, "fmul");
                         printf("fmul f%d f%d f%d\n", rd, rs, rt);
@@ -476,6 +505,7 @@ int main (int argc, char *argv[]){
                       //FDIV
                       freg[rd] = fdiv(freg[rs], freg[rt]);
                       pc++;
+                      opcount[25]++;
                       if(debug){
                         strcpy(currop, "fdiv");
                         printf("fdiv f%d f%d f%d\n", rd, rs, rt);
@@ -485,6 +515,7 @@ int main (int argc, char *argv[]){
                       //FEQ
                       reg[rd] = feq(freg[rs], freg[rt]);
                       pc++;
+                      opcount[26]++;
                       if(debug){
                         strcpy(currop, "feq");
                         printf("feq r%d f%d f%d\n", rd, rs, rt);
@@ -494,6 +525,7 @@ int main (int argc, char *argv[]){
                       //FLT
                       reg[rd] = flt(freg[rs], freg[rt]);
                       pc++;
+                      opcount[27]++;
                       if(debug){
                         strcpy(currop, "flt");
                         printf("flt r%d f%d f%d\n", rd, rs, rt);
@@ -503,6 +535,7 @@ int main (int argc, char *argv[]){
                       //FLE
                       reg[rd] = fle(freg[rs], freg[rt]);
                       pc++;
+                      opcount[28]++;
                       if(debug){
                         strcpy(currop, "fle");
                         printf("fle r%d f%d f%d\n", rd, rs, rt);
@@ -512,6 +545,7 @@ int main (int argc, char *argv[]){
                       //FSQRT
                       freg[rd] = fsqrt(freg[rs]);
                       pc++;
+                      opcount[29]++;
                       if(debug){
                         strcpy(currop, "fsqrt");
                         printf("fsqrt f%d f%d\n", rd, rs);
@@ -521,6 +555,7 @@ int main (int argc, char *argv[]){
                       //FNEG
                       freg[rd] = fneg(freg[rs]);
                       pc++;
+                      opcount[30]++;
                       if(debug){
                         strcpy(currop, "fneg");
                         printf("fneg f%d f%d\n", rd, rs);
@@ -530,6 +565,7 @@ int main (int argc, char *argv[]){
                       //ITOF
                       freg[rd] = itof(reg[rs]);
                       pc++;
+                      opcount[31]++;
                       if(debug){
                         strcpy(currop, "itof");
                         printf("itof f%d r%d\n", rd, rs);
@@ -539,6 +575,7 @@ int main (int argc, char *argv[]){
                       //FTOI
                       reg[rd] = ftoi(freg[rs]);
                       pc++;
+                      opcount[32]++;
                       if(debug){
                         strcpy(currop, "ftoi");
                         printf("ftoi r%d f%d\n", rd, rs);
@@ -549,6 +586,7 @@ int main (int argc, char *argv[]){
                       v.i = reg[rs];
                       freg[rd] = v.f;
                       pc++;
+                      opcount[33]++;
                       if(debug){
                         strcpy(currop, "fmvfr");
                         printf("fmvfr f%d r%d\n", rd, rs);
@@ -559,6 +597,7 @@ int main (int argc, char *argv[]){
                       v.f = freg[rs];
                       reg[rd] = v.i;
                       pc++;
+                      opcount[34]++;
                       if(debug){
                         strcpy(currop, "fmtvr");
                         printf("fmvtr r%d f%d\n", rd, rs);
@@ -616,6 +655,14 @@ int main (int argc, char *argv[]){
 
     if(debug && last)
       print_info();
+
+
+    //統計機能
+    for(int i = 0; i < OPNUM; i++){
+          
+          fprintf(stfp, "%s\t%6.3f\n", opdata[i], opcount[i]*100/(float)num);
+
+    }
 
 
     if(fclose( fp ) == EOF ){
