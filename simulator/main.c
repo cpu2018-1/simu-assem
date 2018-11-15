@@ -25,7 +25,7 @@ char *opdata[OPNUM] = {"lui", "add", "addi", "sub", "sll", "slli", "srl",
                   "beq", "bne", "blt", "ble", "lw", "sw", "out", "in",
                   "fadd", "fsub", "fmul", "fdiv", "feq", "flt", "fle", 
                   "fsqrt", "fneg", "itof", "ftoi", "fmvfr", "fmvtr"};
-int opcount[OPNUM] = {0};
+long opcount[OPNUM] = {0};
 
 int debug = 0;
 int sub = 0;
@@ -60,7 +60,7 @@ int main (int argc, char *argv[]){
     char name[64];
     char subname[64];
     char inname[64];
-    int num;
+    long num;
     union uv v = {0};
     
 
@@ -660,7 +660,7 @@ int main (int argc, char *argv[]){
     //統計機能
     for(int i = 0; i < OPNUM; i++){
           
-          fprintf(stfp, "%s\t%6.3f\n", opdata[i], opcount[i]*100/(float)num);
+          fprintf(stfp, "%s\t%6.3f\n", opdata[i], opcount[i]/(float)num * 100);
 
     }
 
