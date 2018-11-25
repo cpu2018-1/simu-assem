@@ -647,10 +647,9 @@ int main (int argc, char *argv[]){
 
                 }
 
-                currcount++;
-
             }
 
+                currcount++;
     }
 
     if(debug && last)
